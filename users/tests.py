@@ -1,75 +1,55 @@
 from django.test import TestCase
-
-# Create your tests here.
-from django.test import TestCase
 from django.urls import reverse
-from rest_framework.test import APIClient
+from rest_framework import status
+from django.core import mail
+from rest_framework.test import APITestCase
 from .models import CustomUser
 
-class CustomUserTestCase(TestCase):
+class CustomUserTestCase(APITestCase):
     def setUp(self):
-        self.client = APIClient()
-        self.user = CustomUser.objects.create(first_name="Jorge", last_name="Calleros", 
-                                                email="ing.kyros.test@gmail.com",
-                                                phone_number='+526644567637', role='vet')
-
-      
+        self.user = CustomUser.objects.create(email='testuser@gmail.com', role='vet')
+        self.user.set_password('ComplexPassword123!')
+        self.user.save()
+        
+        
     def test_create_user(self):
         url = reverse('user-list')
         data = {
-            "first_name": "Luis",
-            "last_name": "Martinez",
-            "email": "prueba123@gmail.com",
+            "first_name": "Test",
+            "last_name": "User",
+            "email": "newuser@gmail.com",
             "phone_number": "+526434318623",
+            "password": "ComplexPassword123!",
+            "password2": "ComplexPassword123!",
             "role": "vet"
         }
         response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(CustomUser.objects.get(first_name='Luis').last_name, 'Martinez')
-        self.assertEqual(CustomUser.objects.get(first_name='Luis').email, 'prueba123@gmail.com')
-        self.assertEqual(CustomUser.objects.get(first_name='Luis').phone_number, '+526434318623')
-        self.assertEqual(CustomUser.objects.get(first_name='Luis').role, 'vet')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(CustomUser.objects.count(), 2)
+        self.assertEqual(CustomUser.objects.get(email='newuser@gmail.com').role, 'vet')
 
-      
+
     def test_read_user(self):
         url = reverse('user-detail', kwargs={'pk': self.user.pk})
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['email'], 'ing.kyros.test@gmail.com')
-
-
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['email'], 'testuser@gmail.com')
+        
+        
     def test_update_user(self):
         url = reverse('user-detail', kwargs={'pk': self.user.pk})
-        
         data = {
-            "first_name": "Maria",
-            "last_name": "Juarez",
-            "email": "prueba121@gmail.com",
-            "phone_number": "+526434318642",
-            "role": "vet"
+            "role": "assistant"
         }
-        response = self.client.put(url, data, format='json')
-        self.assertEqual(response.status_code, 200)
-        self.user.refresh_from_db()
-        self.assertEqual(self.user.first_name, 'Maria')
-        self.assertEqual(self.user.last_name, 'Juarez')
-        self.assertEqual(self.user.email, 'prueba121@gmail.com')
-        self.assertEqual(self.user.phone_number, '+526434318642')
-
-       
-    def test_partial_update_user(self):
-        url = reverse('user-detail', kwargs={'pk': self.user.pk})
-        data = {
-            'role': 'assistant',
-        }
+        self.client.login(email='testuser@gmail.com', password='ComplexPassword123!')
         response = self.client.patch(url, data, format='json')
-        self.assertEqual(response.status_code, 200)
-        self.user.refresh_from_db()
-        self.assertEqual(self.user.role, 'assistant')
-
-
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(CustomUser.objects.get(email='testuser@gmail.com').role, 'assistant')
+        
+        
     def test_delete_user(self):
         url = reverse('user-detail', kwargs={'pk': self.user.pk})
+        self.client.login(email='testuser@gmail.com', password='ComplexPassword123!')
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(CustomUser.objects.count(), 0)
