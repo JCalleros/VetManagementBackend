@@ -14,13 +14,11 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'email': {'required': True},
         }
 
-
     def validate(self, attrs):
         if 'password' in attrs and 'password2' in attrs:
             if attrs['password'] != attrs['password2']:
                 raise serializers.ValidationError({"password": "Password fields didn't match."})
         return attrs
-
 
     def create(self, validated_data):
         validated_data.pop('password2')

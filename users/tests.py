@@ -10,8 +10,8 @@ class CustomUserTestCase(APITestCase):
         self.user = CustomUser.objects.create(email='testuser@gmail.com', role='vet')
         self.user.set_password('ComplexPassword123!')
         self.user.save()
-        
-        
+
+
     def test_create_user(self):
         url = reverse('user-list')
         data = {
@@ -34,8 +34,8 @@ class CustomUserTestCase(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['email'], 'testuser@gmail.com')
-        
-        
+
+
     def test_update_user(self):
         url = reverse('user-detail', kwargs={'pk': self.user.pk})
         data = {
@@ -45,8 +45,8 @@ class CustomUserTestCase(APITestCase):
         response = self.client.patch(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(CustomUser.objects.get(email='testuser@gmail.com').role, 'assistant')
-        
-        
+
+
     def test_delete_user(self):
         url = reverse('user-detail', kwargs={'pk': self.user.pk})
         self.client.login(email='testuser@gmail.com', password='ComplexPassword123!')
