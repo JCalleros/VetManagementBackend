@@ -2,12 +2,17 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 from .models import Pet, Owner
+from users.models import CustomUser
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class PetTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.owner = Owner.objects.create(name='John Doe', contact='johndoe@example.com', address='123 Main St')
         self.pet = Pet.objects.create(name='Fido', species='Dog', sex='M', owner=self.owner, age_years=1)
+        self.user = CustomUser.objects.create(email='testuser@gmail.com', role='vet')
+        refresh = RefreshToken.for_user(self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
 
     def test_create_pet(self):
         url = reverse('pet-list')
