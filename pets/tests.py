@@ -88,7 +88,6 @@ class PetTestCase(TestCase):
             }
         }
         response = self.client.put(url, data, format='json')
-        print(f"Response: {response.data}")
         self.assertEqual(response.status_code, 200)
         self.pet.refresh_from_db()
         self.assertEqual(self.pet.owner.name, 'Jane Doe')
