@@ -4,7 +4,7 @@ from .models import Pet, Owner
 class OwnerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Owner
-        fields = ['name', 'contact', 'address']
+        fields = ['id', 'name', 'contact', 'address']
 
 class PetSerializer(serializers.ModelSerializer):
     owner = OwnerSerializer(allow_null=True)
