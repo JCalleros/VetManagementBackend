@@ -26,7 +26,7 @@ load_dotenv()
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False if os.getenv('DEGUB') == 'False' else True
 
-ALLOWED_HOSTS = os.getenv('FRONTEND_HOSTS').split(' ')
+ALLOWED_HOSTS = []
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # Application definition
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'users',
     'pets',
+    'appointments',
 ]
 
 REST_FRAMEWORK = {
@@ -56,7 +57,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15) if not DEBUG else timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
