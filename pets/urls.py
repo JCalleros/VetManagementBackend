@@ -3,8 +3,8 @@ from rest_framework.routers import DefaultRouter
 from .views import PetViewSet
 
 router = DefaultRouter()
-router.register(r'pets', PetViewSet)
+router.register(r'', PetViewSet)
 
 urlpatterns = [
-    path('v1/', include(router.urls)),
+    path('', include(router.urls)),
 ]
