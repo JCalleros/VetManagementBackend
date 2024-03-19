@@ -8,7 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 class PetTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.owner = Owner.objects.create(name='John Doe', contact='johndoe@example.com', address='123 Main St')
+        self.owner = Owner.objects.create(name='John Doe', phone_number='+526434318623', contact='johndoe@example.com', address='123 Main St')
         self.pet = Pet.objects.create(name='Fido', species='Dog', sex='M', owner=self.owner, age_years=1)
         self.user = CustomUser.objects.create(email='testuser@gmail.com', role='vet')
         refresh = RefreshToken.for_user(self.user)
@@ -23,6 +23,7 @@ class PetTestCase(TestCase):
             'age_years': 2,
             'owner': {
                 'name': 'Jane Doe',
+                'phone_number': '+526434318654',
                 'contact': 'janedoe@example.com',
                 'address': '456 Main St'
             }
@@ -44,6 +45,7 @@ class PetTestCase(TestCase):
             'age_weeks': 26,
             'owner': {
                 'name': 'John Doe',
+                'phone_number': '+526434318643',
                 'contact': 'johndoe@example.com',
                 'address': '123 Main St'
             }
@@ -65,7 +67,6 @@ class PetTestCase(TestCase):
             'age_years': 1,
             'age_months': 12,
             'age_weeks': 52,
-            'owner': None
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, 201)
@@ -81,13 +82,13 @@ class PetTestCase(TestCase):
 
     def test_update_pet(self):
         url = reverse('pet-detail', kwargs={'pk': self.pet.pk})
-        
         data = {
             'name': 'Fido',
             'species': 'Dog',
             'sex': 'M',
             'owner': {
                 'name': 'Jane Doe',
+                'phone_number': '+526358318643',
                 'contact': 'janedoe@example.com',
                 'address': '456 Main St'
             }
@@ -131,7 +132,7 @@ class PetTestCase(TestCase):
 class OwnerTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.owner = Owner.objects.create(name='John Doe', contact='johndoe@example.com', address='123 Main St')
+        self.owner = Owner.objects.create(name='John Doe', phone_number='+526434318623', contact='johndoe@example.com', address='123 Main St')
         self.user = CustomUser.objects.create(email='testuser@gmail.com', role='vet')
         refresh = RefreshToken.for_user(self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
@@ -140,6 +141,7 @@ class OwnerTestCase(TestCase):
         url = reverse('owner-list')
         data = {
             'name': 'Jane Doe',
+            'phone_number': '+526434318620',
             'contact': 'janedoe@example.com',
             'address': '456 Main St'
         }
@@ -158,6 +160,7 @@ class OwnerTestCase(TestCase):
         url = reverse('owner-detail', kwargs={'pk': self.owner.pk})
         data = {
             'name': 'Jane Doe Changed',
+            'phone_number': '+526434318621',
             'contact': 'janedoe@example.com',
             'address': '454 Main St'
         }
