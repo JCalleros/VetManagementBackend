@@ -4,10 +4,10 @@ from .models import Pet, Owner
 class OwnerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Owner
-        fields = ['id', 'name', 'contact', 'address']
+        fields = ['id', 'name', 'phone_number', 'contact', 'address']
 
 class PetSerializer(serializers.ModelSerializer):
-    owner = OwnerSerializer(allow_null=True)
+    owner = OwnerSerializer(allow_null=True, required=False)
 
     class Meta:
         model = Pet
@@ -15,7 +15,9 @@ class PetSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         owner_data = validated_data.pop('owner', None)
-        owner = Owner.objects.create(**owner_data) if owner_data else None
+        owner = None
+        if owner_data and all(value is not None for value in owner_data.values()):
+            owner = Owner.objects.create(**owner_data) if owner_data else None
         pet = Pet.objects.create(owner=owner, **validated_data)
         return pet
     

@@ -1,24 +1,25 @@
 
 
 from django.test import TestCase
+from django.conf import settings
 from django.urls import reverse
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.test import APIClient
 from pets.models import Pet
 from users.models import CustomUser
 from .models import Appointment
+import jwt
 
 
 class AppointmentTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.pet = Pet.objects.create(name='Fido', species='Dog', sex='M')
-        self.user = CustomUser.objects.create(email='testuser@gmail.com', role='vet')
+        self.user = CustomUser.objects.create(email='testuser@example.com', role='vet')
         self.appointment = Appointment.objects.create(pet=self.pet, date="2024-03-13T15:33:23Z")
-        refresh = RefreshToken.for_user(self.user)
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
-        return
-
+        payload = {'email': 'testuser@example.com'}
+        jwt_token = jwt.encode(payload, settings.SIMPLE_JWT['SIGNING_KEY'], algorithm='HS256')
+        self.client.cookies['access_token'] = jwt_token
+        
     def test_create_appointment(self):
         url = reverse('appointment-list')
         data = {
