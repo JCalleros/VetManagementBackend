@@ -1,19 +1,24 @@
+from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 from .models import Pet, Owner
 from users.models import CustomUser
 from rest_framework_simplejwt.tokens import RefreshToken
+import jwt 
 
 class PetTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.owner = Owner.objects.create(name='John Doe', phone_number='+526434318623', contact='johndoe@example.com', address='123 Main St')
         self.pet = Pet.objects.create(name='Fido', species='Dog', sex='M', owner=self.owner, age_years=1)
-        self.user = CustomUser.objects.create(email='testuser@gmail.com', role='vet')
-        refresh = RefreshToken.for_user(self.user)
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
-
+        self.user = CustomUser.objects.create(email='testuser@example.com', role='vet')
+        self.user.set_password('ComplexPassword123!')
+        self.user.save()
+        payload = {'email': 'testuser@example.com'}
+        jwt_token = jwt.encode(payload, settings.SIMPLE_JWT['SIGNING_KEY'], algorithm='HS256')
+        self.client.cookies['access_token'] = jwt_token
+        
     def test_create_pet(self):
         url = reverse('pet-list')
         data = {
@@ -24,7 +29,7 @@ class PetTestCase(TestCase):
             'owner': {
                 'name': 'Jane Doe',
                 'phone_number': '+526434318654',
-                'contact': 'janedoe@example.com',
+                'email': 'janedoe@example.com',
                 'address': '456 Main St'
             }
         }
@@ -133,9 +138,10 @@ class OwnerTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.owner = Owner.objects.create(name='John Doe', phone_number='+526434318623', contact='johndoe@example.com', address='123 Main St')
-        self.user = CustomUser.objects.create(email='testuser@gmail.com', role='vet')
-        refresh = RefreshToken.for_user(self.user)
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
+        self.user = CustomUser.objects.create(email='testuser@example.com', role='vet')
+        payload = {'email': 'testuser@example.com'}
+        jwt_token = jwt.encode(payload, settings.SIMPLE_JWT['SIGNING_KEY'], algorithm='HS256')
+        self.client.cookies['access_token'] = jwt_token
 
     def test_create_owner(self):
         url = reverse('owner-list')
