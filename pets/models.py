@@ -28,6 +28,7 @@ class Pet(models.Model):
     age_months = models.PositiveIntegerField(null=True, blank=True)
     age_weeks = models.PositiveIntegerField(null=True, blank=True)
     color = models.CharField(max_length=100, null=True, blank=True)
+    photo = models.ImageField(upload_to='pet_images/', null=True, blank=True)
     owners = models.ManyToManyField(Owner, blank=True)
     
 

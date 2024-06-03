@@ -17,6 +17,43 @@ class PetViewSet(viewsets.ModelViewSet):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def list(self, re1quest, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serailizer = self.get_serializer(page, many=True)
+            data = serailizer.data
+            for pet in data:
+                owners_data = []
+                for owner_id in pet['owners']:
+                    owner = Owner.objects.get(id=owner_id)
+                    owners_data = {
+                        'id' : owner.id,
+                        'full_name': owner.full_name,
+                        'phone_number': owner.phone_number,
+                        'email': owner.email,
+                    }
+                    owners_data.append(owners_data)
+                pet['owners'] = owners_data
+            return self.get_paginated_response(data)
+    
+        serializer = self.get_serializer(queryset, many=True)
+        data = serializer.data
+        for pet in data:
+            owners_data = []
+            for owner_id in pet['owners']:
+                owner = Owner.objects.get(id=owner_id)
+                owner_data = {
+                    'id': owner.id,
+                    'full_name': owner.full_name,
+                    'phone_number': owner.phone_number,
+                    'contact': owner.contact,
+                    'address': owner.address
+                }
+                owners_data.append(owner_data)
+            pet['owners'] = owners_data
+        return Response(data)
+        
     def create(self, request, *args, **kwargs):
         name = request.data.get('name')
         species = request.data.get('species')
@@ -44,6 +81,7 @@ class PetViewSet(viewsets.ModelViewSet):
                 return Response({"detail": "A pet with these details already exists."}, status=status.HTTP_400_BAD_REQUEST)
         return super().update(request, *args, **kwargs)
 
+        
     
     
 class OwnerViewSet(viewsets.ModelViewSet):
