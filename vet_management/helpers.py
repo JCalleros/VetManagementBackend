@@ -5,6 +5,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import Token
 from users.models import CustomUser
+from jwt.exceptions import ExpiredSignatureError
 
 class CookieJWTAuthentication(JWTAuthentication):
     def authenticate(self, request):
@@ -16,7 +17,8 @@ class CookieJWTAuthentication(JWTAuthentication):
             user_email = payload['email']
         except jwt.DecodeError:
             raise AuthenticationFailed('Invalid JWT token')
-        
+        except ExpiredSignatureError:
+            return None
         try:
             user = CustomUser.objects.get(email=user_email)
         except CustomUser.DoesNotExist:
