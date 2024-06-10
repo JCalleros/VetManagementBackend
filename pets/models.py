@@ -8,8 +8,7 @@ class Owner(models.Model):
     )
     full_name = models.CharField(max_length=100, db_index=True)
     phone_number = models.CharField(validators=[phone_regex], max_length=17, unique=True)
-    contact = models.CharField(max_length=100, null=True, blank=True)
-    address = models.CharField(max_length=200, null=True, blank=True)
+    email = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return self.full_name

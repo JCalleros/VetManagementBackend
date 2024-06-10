@@ -20,66 +20,26 @@ class PetViewSet(viewsets.ModelViewSet):
     def list(self, re1quest, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
-        if page is not None:
-            serailizer = self.get_serializer(page, many=True)
-            data = serailizer.data
-            for pet in data:
-                owners_data = []
-                for owner_id in pet['owners']:
-                    owner = Owner.objects.get(id=owner_id)
-                    owners_data = {
-                        'id' : owner.id,
-                        'full_name': owner.full_name,
-                        'phone_number': owner.phone_number,
-                        'email': owner.email,
-                    }
-                    owners_data.append(owners_data)
-                pet['owners'] = owners_data
-            return self.get_paginated_response(data)
-    
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = self.get_serializer(page if page is not None else queryset, many=True)
         data = serializer.data
+        
         for pet in data:
             owners_data = []
             for owner_id in pet['owners']:
-                owner = Owner.objects.get(id=owner_id)
+                try:
+                    owner = Owner.objects.get(id=owner_id)
+                except Owner.DoesNotExist:
+                    continue
                 owner_data = {
                     'id': owner.id,
                     'full_name': owner.full_name,
                     'phone_number': owner.phone_number,
-                    'contact': owner.contact,
-                    'address': owner.address
+                    'email': owner.email,
                 }
                 owners_data.append(owner_data)
             pet['owners'] = owners_data
-        return Response(data)
-        
-    def create(self, request, *args, **kwargs):
-        name = request.data.get('name')
-        species = request.data.get('species')
-        sex = request.data.get('sex')
-        owners = request.data.get('owners')
-        if owners is not None:
-            if Pet.objects.filter(name=name, species=species, sex=sex, owners__in=owners).exists():
-                return Response({"detail": "A pet with these details already exists."}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            if Pet.objects.filter(name=name, species=species, sex=sex, owners__isnull=True).exists():
-                return Response({"detail": "A pet with these details already exists."}, status=status.HTTP_400_BAD_REQUEST)
-                
-        return super().create(request, *args, **kwargs)
 
-    def update(self, request, *args, **kwargs):
-        name = request.data.get('name')
-        species = request.data.get('species')
-        sex = request.data.get('sex')
-        owners = request.data.get('owners')
-        if owners is not None:
-            if Pet.objects.filter(name=name, species=species, sex=sex, owners__in=owners).exclude(id=kwargs['pk']).exists():
-                return Response({"detail": "A pet with these details already exists."}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            if Pet.objects.filter(name=name, species=species, sex=sex, owners__isnull=True).exclude(id=kwargs['pk']).exists():
-                return Response({"detail": "A pet with these details already exists."}, status=status.HTTP_400_BAD_REQUEST)
-        return super().update(request, *args, **kwargs)
+        return self.get_paginated_response(data) if page is not None else Response(data)
 
         
     

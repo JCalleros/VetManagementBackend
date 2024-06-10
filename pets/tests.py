@@ -9,7 +9,7 @@ import jwt
 class PetTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.owner = Owner.objects.create(full_name='John Doe', phone_number='+526434318623', contact='johndoe@example.com', address='123 Main St')
+        self.owner = Owner.objects.create(full_name='John Doe', phone_number='+526434318623', email='johndoe@example.com')
         self.pet = Pet.objects.create(name='Fido', species='Dog', breed='Mix', sex='M', age_years=1)
         self.pet.owners.add(self.owner)
         self.user = CustomUser.objects.create(email='testuser@example.com', role='vet')
@@ -97,7 +97,7 @@ class PetTestCase(TestCase):
         
     def test_update_pet(self):
         url = reverse('pet-detail', kwargs={'pk': self.pet.pk})
-        owner = Owner.objects.create(full_name='Omar', phone_number='+555434216892', contact='omar@example.com')
+        owner = Owner.objects.create(full_name='Omar', phone_number='+555434216892', email='omar@example.com')
     
         data = {
             'name': 'Fido',
@@ -127,7 +127,7 @@ class PetTestCase(TestCase):
 
     def test_partial_update_owner(self):
         url = reverse('pet-detail', kwargs={'pk': self.pet.pk})
-        owner = Owner.objects.create(full_name='Juan Mendez', phone_number='+578434213256', contact='juanm@example.com')
+        owner = Owner.objects.create(full_name='Juan Mendez', phone_number='+578434213256', email='juanm@example.com')
         current_owners = list(self.pet.owners.values_list('id', flat=True))
         current_owners.append(owner.id)
         data = {
@@ -150,7 +150,7 @@ class PetTestCase(TestCase):
 class OwnerTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.owner = Owner.objects.create(full_name='John Doe', phone_number='+526434318623', contact='johndoe@example.com', address='123 Main St')
+        self.owner = Owner.objects.create(full_name='John Doe', phone_number='+526434318623', email='johndoe@example.com')
         self.user = CustomUser.objects.create(email='testuser@example.com', role='vet')
         payload = {'email': 'testuser@example.com'}
         jwt_token = jwt.encode(payload, settings.SIMPLE_JWT['SIGNING_KEY'], algorithm='HS256')
@@ -161,11 +161,11 @@ class OwnerTestCase(TestCase):
         data = {
             'full_name': 'Jane Doe',
             'phone_number': '+526434318620',
-            'contact': 'janedoe@example.com',
+            'email': 'janedoe@example.com',
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(Owner.objects.get(full_name='Jane Doe').contact, 'janedoe@example.com')
+        self.assertEqual(Owner.objects.get(full_name='Jane Doe').email, 'janedoe@example.com')
         self.assertEqual(Owner.objects.get(full_name='Jane Doe').phone_number, '+526434318620')
     
     def test_get_owner(self):
@@ -180,12 +180,12 @@ class OwnerTestCase(TestCase):
         data = {
             'full_name': 'Jane Doe Changed',
             'phone_number': '+526434318621',
-            'contact': 'janedoe@example.com',
+            'email': 'janedoe@example.com',
         }
         response = self.client.put(url, data, format='json')
         self.assertEqual(response.status_code, 200)
         self.owner.refresh_from_db()
-        self.assertEqual(self.owner.contact, 'janedoe@example.com')
+        self.assertEqual(self.owner.email, 'janedoe@example.com')
  
     def test_partial_update_owner(self):
         url = reverse('owner-detail', kwargs={'pk': self.owner.pk})
