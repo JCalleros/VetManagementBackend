@@ -8,17 +8,13 @@ services:
     container_name: vet_prod_api
     volumes:
       - .:/app:z
-      - ./staticfiles:/app/staticfiles
-    ports:
-      - "8000:8000"
-    # expose:
-    #   - "8000"
+      - vet_static_volume:/app/staticfiles
+    expose:
+      - "8000"  
     env_file:
       - ./.envs/.env.local
     depends_on:
       - postgres
-      # - mailpit
-      # - redis
     command: /start
     networks:
       - vet_prod_nw
@@ -60,6 +56,8 @@ networks:
     external: true
 
 volumes:
+  vet_static_volume:
+    external: true
   vet_prod_postgres_data: {}
   vet_prod_mailpit_data: {}
   
